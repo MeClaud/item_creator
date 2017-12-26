@@ -7,22 +7,25 @@ define('ACCESS_KEY', '12345');
 define('DBHOST', 'localhost');
 define('DBUSER', 'root');
 define('DBPASS', '');
-define('DB', 'mcms');
 
 /* Debug mode */
-$debug = false;
+$debug = true;
+
+$notif['creation-success'] = false;
+$notif['creation-fail'] = false;
+$notif['wrong-key'] = false;
+$notif['wrong-username'] = false;
+
 
 $stone_list = json_decode(file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR.'stone_list.json'));
 $bonus_list = json_decode(file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR.'bonus_list.json'));
 
 try {
-	$conn = @new PDO('mysql:host='.DBHOST.';dbname='.DB, DBUSER, DBPASS);
+	$conn = @new PDO('mysql:host='.DBHOST, DBUSER, DBPASS);
 } catch (PDOException $e) {
 	print "Error!: " . $e->getMessage() . "<br/>";
 	die();
 }
-
-$notif = 0;
 
 if (isset($_POST['create'])) {
 	if ($_POST['access-pass'] == ACCESS_KEY) {
@@ -69,9 +72,9 @@ if (isset($_POST['create'])) {
 			
 
 			if ($res) {
-				$notif = 1;
+				$notif['creation-success'] = true;
 			} else {
-				$notif = 2;
+				$notif['creation-fail'] = true;
 				if ($debug) {
 					var_dump($createQuery->errorInfo());
 				}
@@ -79,7 +82,11 @@ if (isset($_POST['create'])) {
 			if ($debug) {
 				var_dump($qp);
 			}
+		} else {
+			$notif['wrong-username'] = true;
 		}
+	} else {
+		$notif['wrong-key'] = true;
 	}
 }
 ?>
@@ -107,23 +114,33 @@ if (isset($_POST['create'])) {
 	<form method="POST" class="form-horizontal">
 		<h4 class="text-center">Modare iteme</h4>
 		<hr>
-		<?php if ($notif == 1): ?>
+		<?php if ($notif['creation-success']): ?>
 			<div class="alert alert-success">
-				<strong>Succes! Itemul a fost creat</strong>
+				<strong>Succes!</strong> Itemul a fost creat!
 			</div>
 		<?php endif ?>
-		<?php if ($notif == 2): ?>
+		<?php if ($notif['creation-fail']): ?>
 			<div class="alert alert-danger">
-				<strong>Eroare! Itemul nu a putut fi creat</strong>
+				<strong>Eroare!</strong> Itemul nu a putut fi creat!
 			</div>
 		<?php endif ?>
-		<div class="form-group">
+		<?php if ($notif['wrong-key']): ?>
+			<div class="alert alert-danger">
+				<strong>Eroare!</strong> Cheia de acces nu este corecta!
+			</div>
+		<?php endif ?>
+		<?php if ($notif['wrong-username']): ?>
+			<div class="alert alert-danger">
+				<strong>Eroare!</strong> Cheia de acces nu este corecta!
+			</div>
+		<?php endif ?>
+		<div class="form-group<?= $notif['wrong-username'] ? ' has-error' : '' ?>">
 			<label for="username" class="control-label col-sm-4">Username</label>
 			<div class="col-sm-5">
 				<input type="text" class="form-control" name="username" id="username">
 			</div>
 		</div>
-		<div class="form-group">
+		<div class="form-group<?= $notif['wrong-key'] ? ' has-error' : '' ?>">
 			<label for="access-pass" class="control-label col-sm-4">Cheie acces</label>
 			<div class="col-sm-5">
 				<input type="text" class="form-control" name="access-pass" id="access-pass">
@@ -156,7 +173,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-5">
 				<select name="stone1" id="stone1" class="form-control">
 					<?php foreach ($stone_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -166,7 +183,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-5">
 				<select name="stone2" id="stone2" class="form-control">
 					<?php foreach ($stone_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -176,7 +193,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-5">
 				<select name="stone3" id="stone3" class="form-control">
 					<?php foreach ($stone_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -187,7 +204,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-4">
 				<select name="bonus1" id="bonus1" class="form-control">
 					<?php foreach ($bonus_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -200,7 +217,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-4">
 				<select name="bonus2" id="bonus2" class="form-control">
 					<?php foreach ($bonus_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -213,7 +230,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-4">
 				<select name="bonus3" id="bonus3" class="form-control">
 					<?php foreach ($bonus_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -226,7 +243,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-4">
 				<select name="bonus4" id="bonus4" class="form-control">
 					<?php foreach ($bonus_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -239,7 +256,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-4">
 				<select name="bonus5" id="bonus5" class="form-control">
 					<?php foreach ($bonus_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -252,7 +269,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-4">
 				<select name="bonus6" id="bonus6" class="form-control">
 					<?php foreach ($bonus_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -265,7 +282,7 @@ if (isset($_POST['create'])) {
 			<div class="col-sm-4">
 				<select name="bonus7" id="bonus7" class="form-control">
 					<?php foreach ($bonus_list as $key => $value): ?>
-						<option value="<?php echo $key ?>"><?php echo $value ?></option>
+						<option value="<?= $key ?>"><?= $value ?></option>
 					<?php endforeach ?>
 				</select>
 			</div>
@@ -281,7 +298,7 @@ if (isset($_POST['create'])) {
 </div>
 <footer class="text-center">
 	<?= date('Y') ?> <br>
-	Codded by <a href="https://meclaud.github.io/">MeClaud</a> under <a href="https://opensource.org/licenses/MIT">MIT license</a>
+	Coded by <a href="https://meclaud.github.io/">MeClaud</a> under <a href="https://opensource.org/licenses/MIT">MIT license</a>
 </footer>
 <script src="js/jquery-3.1.1.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
