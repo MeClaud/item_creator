@@ -9,7 +9,7 @@ define('DBUSER', 'root');
 define('DBPASS', '');
 
 /* Debug mode */
-$debug = true;
+$debug = false;
 
 $notif['creation-success'] = false;
 $notif['creation-fail'] = false;
